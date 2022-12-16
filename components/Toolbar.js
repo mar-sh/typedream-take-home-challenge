@@ -87,8 +87,8 @@ const Toolbar = () => {
         <strike>A</strike>
       </Button>
       <Button format="code">{"<>"}</Button>
-      <Button format="rainbow">🌈</Button>
       <BlockButton format="block-quote">＂</BlockButton>
+      <Button format="rainbow">🌈</Button>
     </div>
   );
 };
