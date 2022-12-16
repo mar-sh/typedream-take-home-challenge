@@ -158,6 +158,23 @@ const toggleBlock = (editor, format) => {
   });
 };
 
+const BlockButton = ({ format, ...props }) => {
+  const editor = useSlate();
+  const isActive = isBlockActive(editor, format);
+
+  return (
+    <button
+      className={`toolbar-btn ${isActive ? "active" : ""}`}
+      onMouseDown={(event) => {
+        event.preventDefault();
+        toggleBlock(editor, format);
+      }}
+    >
+      {props.children}
+    </button>
+  );
+};
+
 const Button = ({ format, type, ...props }) => {
   const editor = useSlate();
   const isActive = isMarkActive(editor, format);
@@ -180,11 +197,7 @@ const Toolbar = () => {
 
   return (
     <div
-      style={{
-        borderBottom: "2px solid #ddd",
-        padding: "10px",
-        margin: "0 -20px 10px -20px ",
-      }}
+      className="toolbar-wrapper"
     >
       <Button format="bold">𝗕</Button>
       <Button format="italic">𝐼</Button>
@@ -194,6 +207,7 @@ const Toolbar = () => {
       </Button>
       <Button format="code">{"<>"}</Button>
       <Button format="rainbow">🌈</Button>
+      <BlockButton format="block-quote">＂</BlockButton>
     </div>
   );
 };
