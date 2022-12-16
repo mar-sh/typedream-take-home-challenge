@@ -5,9 +5,83 @@ import { Slate, Editable, withReact, useSlate } from "slate-react";
 const initialValue = [
   {
     type: "paragraph",
-    children: [{ text: "A line of text in a paragraph." }],
+    children: [
+      {
+        text: "Build the ",
+        bold: true,
+      },
+      {
+        text: "page",
+        rainbow: true,
+        bold: true,
+      },
+      {
+        text: " you need in minutes!",
+        bold: true,
+      },
+    ],
   },
 ];
+
+const getMarkFromKeys = (event) => {
+  const metaOrCtrl = event.ctrlKey || event.metaKey;
+  const { key } = event;
+
+  if (metaOrCtrl && key) {
+    event.preventDefault();
+
+    switch (key) {
+      case "b":
+        return "bold";
+      case "u":
+        return "underline";
+      case "i":
+        return "italic";
+      default:
+        return;
+    }
+  }
+};
+
+const MyEditor = (props) => {
+  const [editor] = useState(() => withReact(createEditor()));
+  const [val, setVal] = useState(JSON.stringify(initialValue, null, 2));
+
+  const renderLeaf = useCallback((props) => <Leaf {...props} />, []);
+
+  return (
+    <div style={{ border: "2px solid #ddd", padding: "0 20px", width: "60vw" }}>
+      <Slate
+        editor={editor}
+        value={initialValue}
+        onChange={(value) => {
+          const isAstChange = editor.operations.some(
+            (op) => "set_selection" !== op.type
+          );
+          if (isAstChange) {
+            const content = JSON.stringify(value, null, 2);
+            setVal(content);
+          }
+        }}
+      >
+        <Toolbar />
+        <Editable
+          renderLeaf={renderLeaf}
+          onKeyDown={(event) => {
+            const mark = getMarkFromKeys(event);
+            if (mark) {
+              toggleMark(editor, mark);
+            }
+          }}
+        ></Editable>
+      </Slate>
+
+      <pre>
+        <code>{val}</code>
+      </pre>
+    </div>
+  );
+};
 
 const Leaf = ({ attributes, children, leaf }) => {
   if (leaf.bold) {
@@ -96,56 +170,6 @@ const Toolbar = () => {
         <strike>A</strike>
       </Button>
       <Button format="rainbow">🌈</Button>
-    </div>
-  );
-};
-
-const MyEditor = (props) => {
-  const [editor] = useState(() => withReact(createEditor()));
-  const [val, setVal] = useState(JSON.stringify(initialValue, null, 2));
-
-  const renderLeaf = useCallback((props) => <Leaf {...props} />, []);
-
-  return (
-    <div style={{ border: "2px solid #ddd", padding: "0 20px", width: "60vw" }}>
-      <Slate
-        editor={editor}
-        value={initialValue}
-        onChange={(value) => {
-          const isAstChange = editor.operations.some(
-            (op) => "set_selection" !== op.type
-          );
-          if (isAstChange) {
-            const content = JSON.stringify(value, null, 2);
-            console.log(content);
-            setVal(content);
-          }
-        }}
-      >
-        <Toolbar />
-        <Editable
-          renderLeaf={renderLeaf}
-          onKeyDown={(event) => {
-            if (event.key === "`" && event.ctrlKey) {
-              event.preventDefault();
-              // Determine whether any of the currently selected blocks are code blocks.
-              const [match] = Editor.nodes(editor, {
-                match: (n) => n.type === "code",
-              });
-              // Toggle the block type depending on whether there's already a match.
-              Transforms.setNodes(
-                editor,
-                { type: match ? "paragraph" : "code" },
-                { match: (n) => Editor.isBlock(editor, n) }
-              );
-            }
-          }}
-        ></Editable>
-      </Slate>
-
-      <pre>
-        <code>{val}</code>
-      </pre>
     </div>
   );
 };
