@@ -34,6 +34,30 @@ a {
     blue,
     violet
   );
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+blockquote {
+  border-left: 4px solid #ccc;
+  padding: 0;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 10px;
+  color: #aaa;
+  font-style: italic;
+}
+
+.toolbar-btn {
+  color: #aaa;
+  outline: none;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.toolbar-btn.active {
+  color: #000;
 }

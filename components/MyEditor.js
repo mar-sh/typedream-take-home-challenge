@@ -1,5 +1,10 @@
 import React, { useState, useCallback } from "react";
-import { Editor, Transforms, createEditor } from "slate";
+import {
+  Editor,
+  Transforms,
+  createEditor,
+  Element as SlateElement,
+} from "slate";
 import { Slate, Editable, withReact, useSlate } from "slate-react";
 
 const initialValue = [
@@ -46,6 +51,7 @@ const getMarkFromKeys = (event) => {
 const MyEditor = (props) => {
   const [editor] = useState(() => withReact(createEditor()));
 
+  const renderElement = useCallback((props) => <Element {...props} />, []);
   const renderLeaf = useCallback((props) => <Leaf {...props} />, []);
 
   return (
@@ -60,6 +66,7 @@ const MyEditor = (props) => {
         <Toolbar />
         <Editable
           id="editor"
+          renderElement={renderElement}
           renderLeaf={renderLeaf}
           onKeyDown={(event) => {
             const mark = getMarkFromKeys(event);
@@ -71,6 +78,16 @@ const MyEditor = (props) => {
       </Slate>
     </div>
   );
+};
+
+const Element = ({ attributes, children, element }) => {
+  switch (element.type) {
+    case "block-quote":
+      return <blockquote {...attributes}>{children}</blockquote>;
+
+    default:
+      return <p {...attributes}>{children}</p>;
+  }
 };
 
 const Leaf = ({ attributes, children, leaf }) => {
@@ -106,6 +123,23 @@ const isMarkActive = (editor, format) => {
   return marks ? marks[format] === true : false;
 };
 
+const isBlockActive = (editor, format, blockType = "type") => {
+  const { selection } = editor;
+  if (!selection) return false;
+
+  const [match] = Array.from(
+    Editor.nodes(editor, {
+      at: Editor.unhangRange(editor, selection),
+      match: (n) =>
+        !Editor.isEditor(n) &&
+        SlateElement.isElement(n) &&
+        n[blockType] === format,
+    })
+  );
+
+  return Boolean(match);
+};
+
 const toggleMark = (editor, format) => {
   const isActive = isMarkActive(editor, format);
 
@@ -116,21 +150,21 @@ const toggleMark = (editor, format) => {
   }
 };
 
-const Button = ({ format, ...props }) => {
+const toggleBlock = (editor, format) => {
+  const isActive = isBlockActive(editor, format);
+
+  Transforms.setNodes(editor, {
+    type: isActive ? "paragraph" : format,
+  });
+};
+
+const Button = ({ format, type, ...props }) => {
   const editor = useSlate();
   const isActive = isMarkActive(editor, format);
-  const style = {
-    color: isActive ? "black" : "gray",
-    outline: "none",
-    border: "none",
-    cursor: "pointer",
-    fontWeight: "bold",
-    fontSize: "16px",
-  };
 
   return (
     <button
-      style={style}
+      className={`toolbar-btn ${isActive ? "active" : ""}`}
       onMouseDown={(event) => {
         event.preventDefault();
         toggleMark(editor, format);
@@ -155,10 +189,10 @@ const Toolbar = () => {
       <Button format="bold">𝗕</Button>
       <Button format="italic">𝐼</Button>
       <Button format="underline">𝐔</Button>
-      <Button format="code">{"<>"}</Button>
       <Button format="strikethrough">
         <strike>A</strike>
       </Button>
+      <Button format="code">{"<>"}</Button>
       <Button format="rainbow">🌈</Button>
     </div>
   );
