@@ -14,24 +14,71 @@ const Leaf = ({ attributes, children, leaf }) => {
     children = <strong>{children}</strong>;
   }
 
+  if (leaf.italic) {
+    children = <em>{children}</em>;
+  }
+
+  if (leaf.underline) {
+    children = <u>{children}</u>;
+  }
+
+  if (leaf.strikethrough) {
+    children = <strike>{children}</strike>;
+  }
+
+  if (leaf.code) {
+    children = <code>{children}</code>;
+  }
+
+  if (leaf.rainbow) {
+    children = <span className="rainbow">{children}</span>;
+  }
+
   return <span {...attributes}>{children}</span>;
+};
+
+const isMarkActive = (editor, format) => {
+  const marks = Editor.marks(editor);
+  return marks ? marks[format] === true : false;
+};
+
+const toggleMark = (editor, format) => {
+  const isActive = isMarkActive(editor, format);
+
+  if (isActive) {
+    Editor.removeMark(editor, format);
+  } else {
+    Editor.addMark(editor, format, true);
+  }
+};
+
+const Button = ({ format, ...props }) => {
+  const editor = useSlate();
+  const isActive = isMarkActive(editor, format);
+  const style = {
+    color: isActive ? "black" : "gray",
+    outline: "none",
+    border: "none",
+    cursor: "pointer",
+    fontWeight: "bold",
+    fontSize: "16px",
+  };
+
+  return (
+    <button
+      style={style}
+      onMouseDown={(event) => {
+        event.preventDefault();
+        toggleMark(editor, format);
+      }}
+    >
+      {props.children}
+    </button>
+  );
 };
 
 const Toolbar = () => {
   const editor = useSlate();
-
-  const toggleBold = (event) => {
-    event.preventDefault();
-    const marks = Editor.marks(editor);
-
-    const isActive = marks ? marks.bold === true : false;
-
-    if (isActive) {
-      Editor.removeMark(editor, "bold");
-    } else {
-      Editor.addMark(editor, "bold", true);
-    }
-  };
 
   return (
     <div
@@ -41,7 +88,14 @@ const Toolbar = () => {
         margin: "0 -20px 10px -20px ",
       }}
     >
-      <button onMouseDown={toggleBold}>Bold</button>
+      <Button format="bold">𝗕</Button>
+      <Button format="italic">𝐼</Button>
+      <Button format="underline">𝐔</Button>
+      <Button format="code">{"<>"}</Button>
+      <Button format="strikethrough">
+        <strike>A</strike>
+      </Button>
+      <Button format="rainbow">🌈</Button>
     </div>
   );
 };
