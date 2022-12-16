@@ -22,3 +22,18 @@ a {
 * {
   box-sizing: border-box;
 }
+
+.rainbow {
+  background: red;
+  background: linear-gradient(
+    to right,
+    orange,
+    yellow,
+    green,
+    cyan,
+    blue,
+    violet
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
