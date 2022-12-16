@@ -45,27 +45,21 @@ const getMarkFromKeys = (event) => {
 
 const MyEditor = (props) => {
   const [editor] = useState(() => withReact(createEditor()));
-  const [val, setVal] = useState(JSON.stringify(initialValue, null, 2));
 
   const renderLeaf = useCallback((props) => <Leaf {...props} />, []);
 
   return (
-    <div style={{ border: "2px solid #ddd", padding: "0 20px", width: "60vw" }}>
-      <Slate
-        editor={editor}
-        value={initialValue}
-        onChange={(value) => {
-          const isAstChange = editor.operations.some(
-            (op) => "set_selection" !== op.type
-          );
-          if (isAstChange) {
-            const content = JSON.stringify(value, null, 2);
-            setVal(content);
-          }
-        }}
-      >
+    <div
+      style={{
+        border: "2px solid #ddd",
+        padding: "0 20px 10px 20px",
+        width: "60vw",
+      }}
+    >
+      <Slate editor={editor} value={initialValue}>
         <Toolbar />
         <Editable
+          id="editor"
           renderLeaf={renderLeaf}
           onKeyDown={(event) => {
             const mark = getMarkFromKeys(event);
@@ -75,10 +69,6 @@ const MyEditor = (props) => {
           }}
         ></Editable>
       </Slate>
-
-      <pre>
-        <code>{val}</code>
-      </pre>
     </div>
   );
 };
